@@ -1,12 +1,12 @@
 ## OpenCV C++ Stereo Camera Calibration
 
+This repository contains some sources to calibrate the intrinsics of individual cameras and also the extrinsics of a stereo pair.
+
 ### Dependencies
 
 - OpenCV
 
-### Usage
-
-#### Compilation
+### Compilation
 
 Compile all the files using the following commands:
 
@@ -16,11 +16,11 @@ cmake ..
 make
 ```
 
-#### Data
+### Data
 
 Some sample calibration images are stored in the `calib_imgs` folder.
 
-#### Intrinsic Calibration of a single camera
+### Intrinsic Calibration of a single camera
 
 This is only for lenses which follow the pinhole model. If you have fisheye lenses with a very wide field of view then see (this)[https://github.com/sourishg/fisheye_stereo_calibration] repository. The calibration saves the camera matrix and the distortion coefficients in a YAML file. The datatype for these matrices is `Mat`.
 
