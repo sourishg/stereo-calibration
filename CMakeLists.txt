@@ -7,8 +7,8 @@ set(CMAKE_CXX_FLAGS "-I/usr/local/opt/opencv3/include")
 find_package(OpenCV REQUIRED)
 include_directories($(OpenCV_INCLUDE_DIRS))
 
-add_executable(calibrate calib_intrinsic.cpp)
-target_link_libraries(calibrate ${OpenCV_LIBS})
+add_executable(calibrate calib_intrinsic.cpp popt_pp.h)
+target_link_libraries(calibrate ${OpenCV_LIBS} "-lpopt")
 
 add_executable(read read_images.cpp)
 target_link_libraries(read ${OpenCV_LIBS})

@@ -4,88 +4,102 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <stdio.h>
 #include <iostream>
+#include "popt_pp.h"
 
 using namespace std;
 using namespace cv;
 
-int board_w = 9;
-int board_h = 6;
-float squareSize = 0.02423; //0.02423m
-
-cv::Size board_sz = cv::Size(board_w, board_h);
-int board_n = board_w * board_h;
-
-vector<vector<cv::Point3f> > object_points;
-vector<vector<cv::Point2f> > imagePoints1;
-vector<cv::Point2f> corners1;
+vector< vector< Point3f > > object_points;
+vector< vector< Point2f > > image_points;
+vector< Point2f > corners;
 vector< vector< Point2f > > left_img_points;
 
-Mat img1, gray1, spl1;
+Mat img, gray;
+Size im_size;
 
-void load_image_points() {
-  int num_imgs = 28;
+void setup_calibration(int board_width, int board_height, int num_imgs, 
+                       float square_size, char* imgs_directory, char* imgs_filename,
+                       char* extension) {
+  Size board_size = Size(board_width, board_height);
+  int board_n = board_width * board_height;
 
-  spl1 = imread("/home/sourish/pinhole_stereo/build/calib_imgs/2/right8.jpg", CV_LOAD_IMAGE_COLOR);
+  for (int k = 1; k <= num_imgs; k++) {
+    char img_file[100];
+    sprintf(img_file, "%s%s%d.%s", imgs_directory, imgs_filename, k, extension);
+    img = imread(img_file, CV_LOAD_IMAGE_COLOR);
+    cv::cvtColor(img, gray, CV_BGR2GRAY);
 
-  /*
-  Fimg1 = imread("/Users/sourishghosh/vision/FisheyeStereo/build/left.jpg", CV_LOAD_IMAGE_COLOR);
-  Fimg2 = imread("/Users/sourishghosh/vision/FisheyeStereo/build/right.jpg", CV_LOAD_IMAGE_COLOR);
-  */
-
-  for (int i = 1; i <= num_imgs; i++) {
-    char left_img[100];
-    sprintf(left_img, "/home/sourish/pinhole_stereo/build/calib_imgs/2/right%d.jpg", i);
-    img1 = imread(left_img, CV_LOAD_IMAGE_COLOR);
-    cv::cvtColor(img1, gray1, CV_BGR2GRAY);
-
-    bool found1 = false;
-
-    found1 = cv::findChessboardCorners(img1, board_sz, corners1,
-  CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
-
-    if (found1)
+    bool found = false;
+    found = cv::findChessboardCorners(img, board_size, corners,
+                                      CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
+    if (found)
     {
-      cv::cornerSubPix(gray1, corners1, cv::Size(5, 5), cv::Size(-1, -1),
-  cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
-      cv::drawChessboardCorners(gray1, board_sz, corners1, found1);
+      cornerSubPix(gray, corners, cv::Size(5, 5), cv::Size(-1, -1),
+                   TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
+      drawChessboardCorners(gray, board_size, corners, found);
     }
     
-    vector<cv::Point3f> obj;
-    for( int i = 0; i < board_h; ++i )
-      for( int j = 0; j < board_w; ++j )
-        obj.push_back(Point3d(double( (float)j * squareSize ), double( (float)i * squareSize ), 0));
+    vector< Point3f > obj;
+    for (int i = 0; i < board_height; i++)
+      for (int j = 0; j < board_width; j++)
+        obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
 
-    if (found1) {
-      cout << i << ". Found corners!" << endl;
-      imagePoints1.push_back(corners1);
+    if (found) {
+      cout << k << ". Found corners!" << endl;
+      image_points.push_back(corners);
       object_points.push_back(obj);
     }
   }
-  for (int i = 0; i < imagePoints1.size(); i++) {
+  for (int i = 0; i < image_points.size(); i++) {
     vector< Point2f > v1, v2;
-    for (int j = 0; j < imagePoints1[i].size(); j++) {
-      v1.push_back(Point2f((double)imagePoints1[i][j].x, (double)imagePoints1[i][j].y));
+    for (int j = 0; j < image_points[i].size(); j++) {
+      v1.push_back(Point2f(image_points[i][j].x, image_points[i][j].y));
     }
     left_img_points.push_back(v1);
   }
 }
 
-int main(int argc, char const *argv[])
+int main(int argc, char const **argv)
 {
-  load_image_points();
+  int board_width, board_height, num_imgs;
+  float square_size;
+  char* imgs_directory;
+  char* imgs_filename;
+  char* out_file;
+  char* extension;
+
+  static struct poptOption options[] = {
+    { "board_width",'w',POPT_ARG_INT,&board_width,0,"Checkerboard width","NUM" },
+    { "board_height",'h',POPT_ARG_INT,&board_height,0,"Checkerboard height","NUM" },
+    { "num_imgs",'n',POPT_ARG_INT,&num_imgs,0,"Number of checkerboard images","NUM" },
+    { "square_size",'s',POPT_ARG_FLOAT,&square_size,0,"Size of checkerboard square","NUM" },
+    { "imgs_directory",'d',POPT_ARG_STRING,&imgs_directory,0,"Directory containing images","STR" },
+    { "imgs_filename",'i',POPT_ARG_STRING,&imgs_filename,0,"Image filename","STR" },
+    { "extension",'e',POPT_ARG_STRING,&extension,0,"Image extension","STR" },
+    { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
+    POPT_AUTOHELP
+    { NULL, 0, 0, NULL, 0, NULL, NULL }
+  };
+
+  POpt popt(NULL, argc, argv, options, 0);
+  int c;
+  while((c = popt.getNextOpt()) >= 0) {}
+
+  setup_calibration(board_width, board_height, num_imgs, square_size,
+                   imgs_directory, imgs_filename, extension);
 
   printf("Starting Calibration\n");
-  cv::Mat K1;
-  cv::Mat D1;
+  Mat K;
+  Mat D;
   vector< Mat > rvecs, tvecs;
   int flag = 0;
   flag |= CV_CALIB_FIX_K4;
   flag |= CV_CALIB_FIX_K5;
-  calibrateCamera(object_points, left_img_points, spl1.size(), K1, D1, rvecs, tvecs, flag);
+  calibrateCamera(object_points, left_img_points, img.size(), K, D, rvecs, tvecs, flag);
 
-  cv::FileStorage fs1("cam_right.yml", cv::FileStorage::WRITE);
-  fs1 << "K1" << K1;
-  fs1 << "D1" << D1;
+  FileStorage fs(out_file, FileStorage::WRITE);
+  fs << "K" << K;
+  fs << "D" << D;
   printf("Done Calibration\n");
 
   return 0;
