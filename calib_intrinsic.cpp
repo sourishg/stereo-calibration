@@ -100,6 +100,9 @@ int main(int argc, char const **argv)
   FileStorage fs(out_file, FileStorage::WRITE);
   fs << "K" << K;
   fs << "D" << D;
+  fs << "board_width" << board_width;
+  fs << "board_height" << board_height;
+  fs << "square_size" << square_size;
   printf("Done Calibration\n");
 
   return 0;
