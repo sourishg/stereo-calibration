@@ -50,13 +50,6 @@ void setup_calibration(int board_width, int board_height, int num_imgs,
       object_points.push_back(obj);
     }
   }
-  for (int i = 0; i < image_points.size(); i++) {
-    vector< Point2f > v1, v2;
-    for (int j = 0; j < image_points[i].size(); j++) {
-      v1.push_back(Point2f(image_points[i][j].x, image_points[i][j].y));
-    }
-    left_img_points.push_back(v1);
-  }
 }
 
 int main(int argc, char const **argv)
@@ -95,7 +88,7 @@ int main(int argc, char const **argv)
   int flag = 0;
   flag |= CV_CALIB_FIX_K4;
   flag |= CV_CALIB_FIX_K5;
-  calibrateCamera(object_points, left_img_points, img.size(), K, D, rvecs, tvecs, flag);
+  calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
 
   FileStorage fs(out_file, FileStorage::WRITE);
   fs << "K" << K;
