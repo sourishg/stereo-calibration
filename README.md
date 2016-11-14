@@ -19,10 +19,6 @@ make
 
 Make sure your are in the `build` folder to run the executables.
 
-### Data
-
-Some sample calibration images are stored in the `calib_imgs` folder.
-
 ### Get images from webcams
 
 This is a small helper tool to grab frames from two webcams operating as a stereo pair. Run the following command to use it.
