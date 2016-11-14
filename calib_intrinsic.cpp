@@ -52,6 +52,28 @@ void setup_calibration(int board_width, int board_height, int num_imgs,
   }
 }
 
+double computeReprojectionErrors(const vector< vector< Point3f > >& objectPoints,
+                                 const vector< vector< Point2f > >& imagePoints,
+                                 const vector< Mat >& rvecs, const vector< Mat >& tvecs,
+                                 const Mat& cameraMatrix , const Mat& distCoeffs) {
+  vector< Point2f > imagePoints2;
+  int i, totalPoints = 0;
+  double totalErr = 0, err;
+  vector< float > perViewErrors;
+  perViewErrors.resize(objectPoints.size());
+
+  for (i = 0; i < (int)objectPoints.size(); ++i) {
+    projectPoints(Mat(objectPoints[i]), rvecs[i], tvecs[i], cameraMatrix,
+                  distCoeffs, imagePoints2);
+    err = norm(Mat(imagePoints[i]), Mat(imagePoints2), CV_L2);
+    int n = (int)objectPoints[i].size();
+    perViewErrors[i] = (float) std::sqrt(err*err/n);
+    totalErr += err*err;
+    totalPoints += n;
+  }
+  return std::sqrt(totalErr/totalPoints);
+}
+
 int main(int argc, char const **argv)
 {
   int board_width, board_height, num_imgs;
@@ -89,6 +111,8 @@ int main(int argc, char const **argv)
   flag |= CV_CALIB_FIX_K4;
   flag |= CV_CALIB_FIX_K5;
   calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
+
+  cout << "Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D) << endl;
 
   FileStorage fs(out_file, FileStorage::WRITE);
   fs << "K" << K;
