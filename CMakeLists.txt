@@ -15,5 +15,8 @@ target_link_libraries(read ${OpenCV_LIBS} "-lpopt")
 add_executable(calibrate_stereo calib_stereo.cpp)
 target_link_libraries(calibrate_stereo ${OpenCV_LIBS} "-lpopt")
 
+add_executable(visualize_chessboard visualize.cpp)
+target_link_libraries(visualize_chessboard ${OpenCV_LIBS} "-lpopt")
+
 add_executable(undistort_rectify undistort_rectify.cpp)
 target_link_libraries(undistort_rectify ${OpenCV_LIBS} "-lpopt")
