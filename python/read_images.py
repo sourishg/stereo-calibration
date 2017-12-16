@@ -27,7 +27,7 @@ while(1):
 	cv2.imshow( "IMG2", img_res2 ) 
 
 	if (cv.waitKey(30) > 0): 
-		x++
+		x += 1
 		print "Saving img pair " + x
 
 		filename1 = "%sleft%d.%s" % ( imgs_directory, x, extension ) 
