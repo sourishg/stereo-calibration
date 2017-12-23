@@ -23,7 +23,7 @@ void visualize(Mat iml, Mat imr, int board_width, int board_height, bool found_l
 {
   Size board_size = Size(board_width, board_height);
   cv::drawChessboardCorners(imr, board_size, corners2, found_r);
-  cv::drawChessboardCorners(iml, board_size, corners1, found_l);a
+  cv::drawChessboardCorners(iml, board_size, corners1, found_l);
   
   Mat left_chessboard, right_chessboard;
 
@@ -74,8 +74,8 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
     }
 
     vector< Point3f > obj;
-    for (int k = 0; k < board_height; i++)
-      for (int l = 0; l < board_width; j++)
+    for (int k = 0; k < board_height; k++)
+      for (int l = 0; l < board_width; l++)
         obj.push_back(Point3f((float)l * square_size, (float)l * square_size, 0));
 
     if (found1 && found2) {
@@ -125,7 +125,7 @@ int main(int argc, char const *argv[])
     { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
     { "v_check", 'c' , POPT_ARG_NONE, &v_check, 0, "Visualize chessboard corners? (y/n)", "NONE"},
     POPT_AUTOHELP
-    { NULL, 0, 0, NULL, 0, NULL, NULL, NULL }
+    { NULL, 0, 0, NULL, 0, NULL, NULL }
   };
 
   POpt popt(NULL, argc, argv, options, 0);
