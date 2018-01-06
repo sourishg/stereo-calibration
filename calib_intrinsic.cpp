@@ -92,7 +92,7 @@ int main(int argc, char const **argv)
     { "imgs_filename",'i',POPT_ARG_STRING,&imgs_filename,0,"Image filename","STR" },
     { "extension",'e',POPT_ARG_STRING,&extension,0,"Image extension","STR" },
     { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
-    { "stat_on",'v',POPT_ARG_INT,&stat_on,0,"Statistical Analysis","NUM" },
+    { "stat_on",'v',POPT_ARG_NONE,&stat_on,0,"Statistical Analysis","NUM" },
     POPT_AUTOHELP
     { NULL, 0, 0, NULL, 0, NULL, NULL, }
   };
@@ -124,6 +124,7 @@ int main(int argc, char const **argv)
   if(stat_on){
     fs << "num_imgs" << num_imgs;
     fs << "cerror" << cerror;
+    printf("Saved");
   }
   printf("Done Calibration\n");
 
