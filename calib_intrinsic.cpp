@@ -17,7 +17,7 @@ vector< vector< Point2f > > left_img_points;
 Mat img, gray;
 Size im_size;
 
-void setup_calibration(int board_width, int board_height, int num_imgs, 
+void setup_calibration(int board_width, int board_height, int num_imgs,
                        float square_size, char* imgs_directory, char* imgs_filename,
                        char* extension) {
   Size board_size = Size(board_width, board_height);
@@ -38,7 +38,7 @@ void setup_calibration(int board_width, int board_height, int num_imgs,
                    TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
       drawChessboardCorners(gray, board_size, corners, found);
     }
-    
+
     vector< Point3f > obj;
     for (int i = 0; i < board_height; i++)
       for (int j = 0; j < board_width; j++)
@@ -76,7 +76,7 @@ double computeReprojectionErrors(const vector< vector< Point3f > >& objectPoints
 
 int main(int argc, char const **argv)
 {
-  int board_width, board_height, num_imgs;
+  int board_width, board_height, num_imgs, stat_on;
   float square_size;
   char* imgs_directory;
   char* imgs_filename;
@@ -92,8 +92,9 @@ int main(int argc, char const **argv)
     { "imgs_filename",'i',POPT_ARG_STRING,&imgs_filename,0,"Image filename","STR" },
     { "extension",'e',POPT_ARG_STRING,&extension,0,"Image extension","STR" },
     { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
+    { "stat_on",'v',POPT_ARG_NONE,&stat_on,0,"Statistical Analysis","NUM" },
     POPT_AUTOHELP
-    { NULL, 0, 0, NULL, 0, NULL, NULL }
+    { NULL, 0, 0, NULL, 0, NULL, NULL, }
   };
 
   POpt popt(NULL, argc, argv, options, 0);
@@ -111,8 +112,8 @@ int main(int argc, char const **argv)
   flag |= CV_CALIB_FIX_K4;
   flag |= CV_CALIB_FIX_K5;
   calibrateCamera(object_points, image_points, img.size(), K, D, rvecs, tvecs, flag);
-
-  cout << "Calibration error: " << computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D) << endl;
+  float cerror = computeReprojectionErrors(object_points, image_points, rvecs, tvecs, K, D);
+  cout << "Calibration error: " << cerror << endl;
 
   FileStorage fs(out_file, FileStorage::WRITE);
   fs << "K" << K;
@@ -120,6 +121,11 @@ int main(int argc, char const **argv)
   fs << "board_width" << board_width;
   fs << "board_height" << board_height;
   fs << "square_size" << square_size;
+  if(stat_on){
+    fs << "num_imgs" << num_imgs;
+    fs << "cerror" << cerror;
+    printf("Saved");
+  }
   printf("Done Calibration\n");
 
   return 0;
