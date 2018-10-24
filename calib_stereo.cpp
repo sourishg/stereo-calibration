@@ -38,6 +38,13 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
     found2 = cv::findChessboardCorners(img2, board_size, corners2,
   CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FILTER_QUADS);
 
+
+    if(!found1 || !found2){
+      cout << "Chessboard find error!" << endl;
+      cout << "leftImg: " << left_img << " and rightImg: " << right_img <<endl;
+      continue;
+    } 
+
     if (found1)
     {
       cv::cornerSubPix(gray1, corners1, cv::Size(5, 5), cv::Size(-1, -1),
