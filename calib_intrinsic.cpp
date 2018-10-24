@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "popt_pp.h"
+#include <sys/stat.h>
 
 using namespace std;
 using namespace cv;
@@ -17,6 +18,11 @@ vector< vector< Point2f > > left_img_points;
 Mat img, gray;
 Size im_size;
 
+bool doesExist (const std::string& name) {
+  struct stat buffer;   
+  return (stat (name.c_str(), &buffer) == 0); 
+}
+
 void setup_calibration(int board_width, int board_height, int num_imgs, 
                        float square_size, char* imgs_directory, char* imgs_filename,
                        char* extension) {
@@ -26,6 +32,8 @@ void setup_calibration(int board_width, int board_height, int num_imgs,
   for (int k = 1; k <= num_imgs; k++) {
     char img_file[100];
     sprintf(img_file, "%s%s%d.%s", imgs_directory, imgs_filename, k, extension);
+    if(!doesExist(img_file))
+      continue;
     img = imread(img_file, CV_LOAD_IMAGE_COLOR);
     cv::cvtColor(img, gray, CV_BGR2GRAY);
 
