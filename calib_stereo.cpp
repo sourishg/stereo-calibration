@@ -4,6 +4,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <stdio.h>
 #include <iostream>
+#include <cstring>
 #include "popt_pp.h"
 
 using namespace std;
@@ -14,10 +15,33 @@ vector< vector< Point2f > > imagePoints1, imagePoints2;
 vector< Point2f > corners1, corners2;
 vector< vector< Point2f > > left_img_points, right_img_points;
 
-Mat img1, img2, gray1, gray2;
+Mat img1, img2, gray1, gray2, left_array[30], right_array[30];
+int i_v = 0;
+
+void visualize(Mat iml, Mat imr, int board_width, int board_height, bool found_l, bool found_r) /*this function visualizes the chessboard
+                                                                                                  corners in the images passed to it*/
+{
+  Size board_size = Size(board_width, board_height);
+  cv::drawChessboardCorners(imr, board_size, corners2, found_r);
+  cv::drawChessboardCorners(iml, board_size, corners1, found_l);
+  
+  Mat left_chessboard, right_chessboard;
+
+  left_array[i_v] = iml; 
+  right_array[i_v] = imr;
+  ++i_v; 
+
+  cv::hconcat(left_array, (i_v + 1), left_chessboard);
+  cv::hconcat(right_array, (i_v + 1), right_chessboard);
+
+  namedWindow("Left Chessboard Corner", WINDOW_AUTOSIZE);
+  namedWindow("Right Chessboard Corner", WINDOW_AUTOSIZE);
+  imshow("Left Chessboard Corner", left_chessboard);
+  imshow("Right Chessboard Corner", right_chessboard);
+}
 
 void load_image_points(int board_width, int board_height, int num_imgs, float square_size,
-                      char* leftimg_dir, char* rightimg_dir, char* leftimg_filename, char* rightimg_filename) {
+                      char* leftimg_dir, char* rightimg_dir, char* leftimg_filename, char* rightimg_filename, char* visual) {
 
   Size board_size = Size(board_width, board_height);
   int board_n = board_width * board_height;
@@ -49,19 +73,17 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
     {
       cv::cornerSubPix(gray1, corners1, cv::Size(5, 5), cv::Size(-1, -1),
   cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
-      cv::drawChessboardCorners(gray1, board_size, corners1, found1);
     }
     if (found2)
     {
       cv::cornerSubPix(gray2, corners2, cv::Size(5, 5), cv::Size(-1, -1),
   cv::TermCriteria(CV_TERMCRIT_EPS | CV_TERMCRIT_ITER, 30, 0.1));
-      cv::drawChessboardCorners(gray2, board_size, corners2, found2);
     }
 
     vector< Point3f > obj;
-    for (int i = 0; i < board_height; i++)
-      for (int j = 0; j < board_width; j++)
-        obj.push_back(Point3f((float)j * square_size, (float)i * square_size, 0));
+    for (int k = 0; k < board_height; k++)
+      for (int l = 0; l < board_width; l++)
+        obj.push_back(Point3f((float)l * square_size, (float)l * square_size, 0));
 
     if (found1 && found2) {
       cout << i << ". Found corners!" << endl;
@@ -69,6 +91,11 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
       imagePoints2.push_back(corners2);
       object_points.push_back(obj);
     }
+    if (strcmp(visual, "y") == 0 && found1 && found2 ) { //calling the visualize function if both left and right images are present
+      visualize(gray1, gray2, board_width, board_height, found1, found2);
+      
+      
+    } 
   }
   for (int i = 0; i < imagePoints1.size(); i++) {
     vector< Point2f > v1, v2;
@@ -79,7 +106,8 @@ void load_image_points(int board_width, int board_height, int num_imgs, float sq
     left_img_points.push_back(v1);
     right_img_points.push_back(v2);
   }
-}
+ }
+
 
 int main(int argc, char const *argv[])
 {
@@ -90,8 +118,9 @@ int main(int argc, char const *argv[])
   char* leftimg_filename;
   char* rightimg_filename;
   char* out_file;
+  char* v_check;
   int num_imgs;
-
+  
   static struct poptOption options[] = {
     { "num_imgs",'n',POPT_ARG_INT,&num_imgs,0,"Number of checkerboard images","NUM" },
     { "leftcalib_file",'u',POPT_ARG_STRING,&leftcalib_file,0,"Left camera calibration","STR" },
@@ -101,6 +130,7 @@ int main(int argc, char const *argv[])
     { "leftimg_filename",'l',POPT_ARG_STRING,&leftimg_filename,0,"Left image prefix","STR" },
     { "rightimg_filename",'r',POPT_ARG_STRING,&rightimg_filename,0,"Right image prefix","STR" },
     { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
+    { "v_check", 'c' , POPT_ARG_NONE, &v_check, 0, "Visualize chessboard corners? (y/n)", "NONE"},
     POPT_AUTOHELP
     { NULL, 0, 0, NULL, 0, NULL, NULL }
   };
@@ -113,7 +143,10 @@ int main(int argc, char const *argv[])
   FileStorage fsr(rightcalib_file, FileStorage::READ);
 
   load_image_points(fsl["board_width"], fsl["board_height"], num_imgs, fsl["square_size"],
-                   leftimg_dir, rightimg_dir, leftimg_filename, rightimg_filename);
+                   leftimg_dir, rightimg_dir, leftimg_filename, rightimg_filename, v_check);
+  
+  int ikey = waitKey(50);
+  waitKey(0);
 
   printf("Starting Calibration\n");
   Mat K1, K2, R, F, E;
