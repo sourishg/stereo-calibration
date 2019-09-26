@@ -17,15 +17,15 @@ vector< vector< Point2f > > left_img_points, right_img_points;
 Mat img1, img2, gray1, gray2;
 
 void load_image_points(int board_width, int board_height, int num_imgs, float square_size,
-                      char* leftimg_dir, char* rightimg_dir, char* leftimg_filename, char* rightimg_filename) {
+                      char* leftimg_dir, char* rightimg_dir, char* leftimg_filename, char* rightimg_filename, char* extension) {
 
   Size board_size = Size(board_width, board_height);
   int board_n = board_width * board_height;
 
   for (int i = 1; i <= num_imgs; i++) {
     char left_img[100], right_img[100];
-    sprintf(left_img, "%s%s%d.jpg", leftimg_dir, leftimg_filename, i);
-    sprintf(right_img, "%s%s%d.jpg", rightimg_dir, rightimg_filename, i);
+    sprintf(left_img, "%s%s%d.%s", leftimg_dir, leftimg_filename, i, extension);
+    sprintf(right_img, "%s%s%d.%s", rightimg_dir, rightimg_filename, i, extension);
     img1 = imread(left_img, CV_LOAD_IMAGE_COLOR);
     img2 = imread(right_img, CV_LOAD_IMAGE_COLOR);
     cvtColor(img1, gray1, CV_BGR2GRAY);
@@ -89,6 +89,7 @@ int main(int argc, char const *argv[])
   char* rightimg_dir;
   char* leftimg_filename;
   char* rightimg_filename;
+  char* extension;
   char* out_file;
   int num_imgs;
 
@@ -100,6 +101,7 @@ int main(int argc, char const *argv[])
     { "rightimg_dir",'R',POPT_ARG_STRING,&rightimg_dir,0,"Directory containing right images","STR" },
     { "leftimg_filename",'l',POPT_ARG_STRING,&leftimg_filename,0,"Left image prefix","STR" },
     { "rightimg_filename",'r',POPT_ARG_STRING,&rightimg_filename,0,"Right image prefix","STR" },
+    { "extension",'e',POPT_ARG_STRING,&extension,0,"Image extension","STR" },
     { "out_file",'o',POPT_ARG_STRING,&out_file,0,"Output calibration filename (YML)","STR" },
     POPT_AUTOHELP
     { NULL, 0, 0, NULL, 0, NULL, NULL }
@@ -113,7 +115,7 @@ int main(int argc, char const *argv[])
   FileStorage fsr(rightcalib_file, FileStorage::READ);
 
   load_image_points(fsl["board_width"], fsl["board_height"], num_imgs, fsl["square_size"],
-                   leftimg_dir, rightimg_dir, leftimg_filename, rightimg_filename);
+                   leftimg_dir, rightimg_dir, leftimg_filename, rightimg_filename, extension);
 
   printf("Starting Calibration\n");
   Mat K1, K2, R, F, E;
