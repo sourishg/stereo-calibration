@@ -36,7 +36,7 @@ This is only for lenses which follow the pinhole model. If you have fisheye lens
 Once you have compiled the sources run the following command to calibrate the intrinsics.
 
 ```bash
-./calibrate -w [board_width] -h [board_height] -n [num_imgs] -s [square_size] -d [imgs_directory] -i [imgs_filename] -o [file_extension] -e [output_filename]
+./calibrate -w [board_width] -h [board_height] -n [num_imgs] -s [square_size] -d [imgs_directory] -i [imgs_filename] -e [file_extension] -o [output_filename]
 ```
 
 For example, the command for the test images in `calib_imgs/1/` would be
