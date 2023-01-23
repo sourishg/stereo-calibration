@@ -1,5 +1,7 @@
 ## OpenCV C++ Stereo Camera Calibration
 
+_**Note**_: I don't actively maintain this repository anymore. PRs are more than welcome to help improve it.
+
 This repository contains some sources to calibrate the intrinsics of individual cameras and also the extrinsics of a stereo pair.
 
 ### Dependencies
