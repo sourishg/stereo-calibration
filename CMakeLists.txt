@@ -17,3 +17,6 @@ target_link_libraries(calibrate_stereo ${OpenCV_LIBS} "-lpopt")
 
 add_executable(undistort_rectify undistort_rectify.cpp)
 target_link_libraries(undistort_rectify ${OpenCV_LIBS} "-lpopt")
+
+add_executable(corner_detect corner_detect.cpp)
+target_link_libraries(corner_detect ${OpenCV_LIBS})
